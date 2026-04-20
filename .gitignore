@@ -1,0 +1,11 @@
+*.keras
+*.wav
+*.m4a
+*Zone.Identifier*
+*.DS_Store*
+*.pyc
+*history.csv
+
+.claude/
+data/wav_file/
+data/npy/
