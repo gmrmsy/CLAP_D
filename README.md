@@ -61,42 +61,97 @@ CLAP_D/
 
 ## 코드 흐름
 
-```mermaid
-flowchart LR
-    W["wav 파일"] -->|"wav_utils.py\nx_data_preprocess()"| NP["x1_data.npy"]
-    C["채점 정보 csv"] -->|"jamo_utils.py\ntext_to_ctc_indices()"| NP2["x2_data.npy"]
-
-    NP & NP2 --> LOAD["data_utils.py\ndata_load()"]
-
-    LOAD --> D1{데이터 구성}
-    D1 -->|no1~no25| SPL["data_utils.py\nmake_list()"]
-    D1 -->|total| CON["data_utils.py\ntotal_concat()"]
-    D1 -->|reliable| REL["data_utils.py\nselect_reliable_data()"]
-
-    SPL & CON & REL --> D2{증강}
-    D2 -->|aug| AUG["data_utils.py / augment()\naugment_utils.py\nspeed_aug() + pitch_aug()"]
-    D2 -->|no aug| READY["train/valid/test 배열"]
-    AUG --> READY
-
-    READY --> D3{"model_1D.py\nmake_talk_clean_model()"}
-    D3 -->|1D| CNN1["Conv1D × 2"]
-    D3 -->|2D| CNN2["Conv2D × 2"]
-
-    CNN1 & CNN2 --> RNN["GRU → Sinusoidal PE\n→ Cross Attention × 6"]
-
-    RNN --> D4{출력 활성화}
-    D4 -->|linear| OUT["Dense(1, linear)"]
-    D4 -->|relu| OUT2["Dense(1, relu)"]
-
-    OUT & OUT2 --> D5{"train_utils.py\nmodel_train()"}
-    D5 -->|lossO| WGT["train_utils.py\nweight_return()"]
-    D5 -->|lossX| FIT["균등 가중치"]
-
-    WGT & FIT --> CKPT[".keras 저장"]
-
-    CKPT -->|"test.py / model.predict()"| POST["× Score_Alloc → round()"]
-    POST --> RESULT["Accuracy / Pearson r → CSV"]
-```
+<table>
+  <thead>
+    <tr>
+      <th>단계</th>
+      <th>파일</th>
+      <th>함수 / 클래스</th>
+      <th>설명</th>
+      <th>선택지</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td rowspan="2"><b>1. 전처리</b></td>
+      <td><code>wav_utils.py</code></td>
+      <td><code>x_data_preprocess()</code></td>
+      <td>wav 파일 → 멜 스펙트로그램 → x1_data.npy</td>
+      <td>-</td>
+    </tr>
+    <tr>
+      <td><code>jamo_utils.py</code></td>
+      <td><code>text_to_ctc_indices()</code></td>
+      <td>제시 텍스트 → 자모 인코딩 → x2_data.npy</td>
+      <td>-</td>
+    </tr>
+    <tr>
+      <td><b>2. 데이터 로드</b></td>
+      <td><code>data_utils.py</code></td>
+      <td><code>data_load()</code></td>
+      <td>npy 파일 로드 및 데이터 구성</td>
+      <td>-</td>
+    </tr>
+    <tr>
+      <td rowspan="3"><b>3. 데이터 구성</b></td>
+      <td rowspan="3"><code>data_utils.py</code></td>
+      <td><code>make_list()</code></td>
+      <td>문항별 독립 학습 데이터 구성</td>
+      <td><b>no1 ~ no25</b></td>
+    </tr>
+    <tr>
+      <td><code>total_concat()</code></td>
+      <td>전체 25문항 병합</td>
+      <td><b>total</b></td>
+    </tr>
+    <tr>
+      <td><code>select_reliable_data()</code></td>
+      <td>Target 분산 상위 3문항 선택</td>
+      <td><b>reliable</b></td>
+    </tr>
+    <tr>
+      <td rowspan="3"><b>4. 데이터 증강</b></td>
+      <td><code>data_utils.py</code></td>
+      <td><code>augment()</code></td>
+      <td>Target≠1 소수 샘플만 선택하여 증강</td>
+      <td rowspan="3"><b>aug</b> / no aug</td>
+    </tr>
+    <tr>
+      <td rowspan="2"><code>augment_utils.py</code></td>
+      <td><code>speed_aug()</code></td>
+      <td>멜 스펙트로그램 시간축 선형 보간 (속도 변환)</td>
+    </tr>
+    <tr>
+      <td><code>pitch_aug()</code></td>
+      <td>멜 빈(bin) 단위 주파수 축 이동 (피치 변환)</td>
+    </tr>
+    <tr>
+      <td><b>5. 모델 생성</b></td>
+      <td><code>model_1D.py</code></td>
+      <td><code>make_talk_clean_model()</code></td>
+      <td>CNN → GRU → Attention × 6 → Dense(1)</td>
+      <td><b>1D / 2D</b>, <b>linear / relu</b></td>
+    </tr>
+    <tr>
+      <td rowspan="2"><b>6. 모델 학습</b></td>
+      <td rowspan="2"><code>train_utils.py</code></td>
+      <td><code>model_train()</code></td>
+      <td>Adam · MSE · EarlyStopping으로 학습</td>
+      <td rowspan="2"><b>lossO / lossX</b></td>
+    </tr>
+    <tr>
+      <td><code>weight_return()</code></td>
+      <td>점수별 역수 가중치 계산 (lossO 적용 시)</td>
+    </tr>
+    <tr>
+      <td><b>7. 평가</b></td>
+      <td><code>test.py</code></td>
+      <td><code>model.predict()</code></td>
+      <td>예측값(0~1) × Score(Alloc) → round → Accuracy / Pearson r → CSV</td>
+      <td>-</td>
+    </tr>
+  </tbody>
+</table>
 
 ---
 
