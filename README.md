@@ -77,7 +77,7 @@ flowchart TD
     D1 -->|"reliable"| REL["data_utils.py\data_load()\select_reliable_data() Target 분산 상위 3문항 선택"]
     
 
-    SPL, CON, REL --> D2{데이터 증강}
+    SPL & CON & REL --> D2{데이터 증강}
     D2 -->|"aug"| AUG["data_utils.py\augment()\augment_utils.py\speed_aug() + pitch_aug()"]
     D2 -->|"no aug"| READY
     AUG --> READY["학습 / 검증 / 테스트 배열"]
