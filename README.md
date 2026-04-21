@@ -188,6 +188,8 @@ Target ≠ 1 (감점/0점)  :  ~25.54%  (소수)
 이는 **단순히 모든 샘플을 만점으로 예측해도 74.46%의 accuracy가 나오는 구조**를 만들어,  
 모델이 점수 분포 편향에 의해 항상 만점을 출력하는 방향으로 수렴할 위험이 있습니다.
 
+<img width="500" height="398" alt="Image" src="https://github.com/user-attachments/assets/91d67010-e168-46b1-91e0-91d52594b974" />
+
 ---
 
 ## [모델 아키텍처 (Baseline: 1D_linear_lossO)](https://github.com/gmrmsy/CLAP_D/blob/main/scr/models/model.py#L57)
@@ -270,6 +272,8 @@ Target ≠ 1 (감점/0점)  :  ~25.54%  (소수)
 temp_list = d_2_csv.groupby('QUESTION_NO')['Target'].describe()[['std']] \
               .sort_values('std', ascending=False).index[:3]
 ```
+
+<img width="700" height="230" alt="Image" src="https://github.com/user-attachments/assets/88321271-a1fd-43b4-b843-a77d814a0646" />
 
 **의도**: 분산이 낮은 문항(대부분 만점)은 모델이 "항상 만점 출력"을 학습하도록 유도하므로 제외하고,  
 상대적으로 점수 다양성이 높은 문항만 선별하여 학습의 질을 높이고자 함  
@@ -363,7 +367,7 @@ shift_bins = random(-max_pitch_bins, +max_pitch_bins)
 
 ### 핵심 지표 (total 예측 기준)
 
-| 모델 | total acc | total corr | 유효 문항 수 (acc>0.30) |
+| 모델 | total acc | total corr | 유효 문항 수 (acc>0.30 / 개별 25문항+병합문항+분산문항) |
 |------|-----------|------------|------------------------|
 | **1D_linear_lossX** | **0.5793** | 0.4748 | 16 / 27 |
 | **2D_linear_lossX** | **0.5793** | 0.4748 | 17 / 27 |
@@ -374,6 +378,7 @@ shift_bins = random(-max_pitch_bins, +max_pitch_bins)
 | 1D_relu_lossX | 0.1413 | N/A | 0 / 27 |
 | 2D_relu_lossX | 0.1413 | N/A | 0 / 27 |
 
+<img width="700" height="287" alt="Image" src="https://github.com/user-attachments/assets/6b642d75-c3a5-4201-9afb-6813ff40335a" />
 ---
 
 ## 핵심 발견: Accuracy의 함정
@@ -395,6 +400,7 @@ shift_bins = random(-max_pitch_bins, +max_pitch_bins)
 
   전체 accuracy: 1117 / 1500 = 74.47%
 ```
+<img width="700" height="360" alt="Image" src="https://github.com/user-attachments/assets/0d3b07b5-4186-4494-87ac-9f71e7c77e6d" />
 
 **문제점**: 0점 예측을 전혀 하지 못하고, 특정 점수값으로 편향된 예측을 함.
 이는 실제 모델이 예측한 값이 Target의 1값인 만점을 예측했고, **74.46%가 데이터의 지배적 점수(만점=Target=1)의 비율 그 자체**이기 때문입니다.
@@ -402,6 +408,7 @@ shift_bins = random(-max_pitch_bins, +max_pitch_bins)
 모든 실험에서 높은 accuracy를 보인 모델들은 공통적으로  
 **지배적인 점수값(만점=Target=1)만 예측하거나 특정 점수 조합에서 우연히 높은 정확도를 기록**하는  
 점수 분포 편향된 학습의 결과였으며, 실제로 언어장애 진단에 활용할 수 있는 수준의 일반화 성능을 달성하지 못하였습니다.
+<img width="700" height="460" alt="Image" src="https://github.com/user-attachments/assets/a8cd1af3-8c0d-4a6b-b7a2-d799a2d7c87a" />
 
 ### Accuracy vs 상관계수
 
@@ -423,3 +430,6 @@ shift_bins = random(-max_pitch_bins, +max_pitch_bins)
 | **평가 지표 오류** | Accuracy가 점수 분포 편향 상황을 반영하지 못해, 학습 실패를 성공으로 오인할 뻔함 |
 | **ReLU 수렴 문제** | MSE 손실 + ReLU 출력층 조합에서 Dying ReLU 현상으로 예측값이 0으로 고착 |
 | **집계(total) 역효과** | 개별 문항보다 전체 앙상블(total)이 오히려 약함 — 특정 점수 예측 능력이 평균화 과정에서 손실 |
+
+
+처음부터 학습한 모델(Zerobase)만으로는 프로젝트 목표 달성에 한계가 있어, 추후 오픈소스 STT 모델을 활용하여 자모 단위 음성 인식 모델을 구축하고 이를 적용할 계획입니다.
