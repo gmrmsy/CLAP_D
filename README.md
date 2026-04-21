@@ -62,44 +62,40 @@ CLAP_D/
 ## 코드 흐름
 
 ```mermaid
-flowchart TD
-    W["음성 파일 .wav"]
-    C["채점 정보 .csv\n문항번호 · 제시텍스트 · 정답점수 · 만점"]
-
-    W -->|"wav_utils.py\nx_data_preprocess()"| NP["멜 스펙트로그램 .npy\nx1_data / x1_data_length"]
-    C -->|"jamo_utils.py\ntext_to_ctc_indices()"| NP2["텍스트 인코딩 .npy\nx2_data / x2_data_length / y_data"]
+flowchart LR
+    W["wav 파일"] -->|"wav_utils.py\nx_data_preprocess()"| NP["x1_data.npy"]
+    C["채점 정보 csv"] -->|"jamo_utils.py\ntext_to_ctc_indices()"| NP2["x2_data.npy"]
 
     NP & NP2 --> LOAD["data_utils.py\ndata_load()"]
 
     LOAD --> D1{데이터 구성}
-    D1 -->|"no1 ~ no25"| SPL["data_load.make_list()\n문항별 계층 분리"]
-    D1 -->|"total"| CON["data_load.total_concat()\n전체 문항 병합"]
-    D1 -->|"reliable"| REL["data_load.select_reliable_data()\nTarget 분산 상위 3문항 선택"]
+    D1 -->|no1~no25| SPL["data_utils.py\nmake_list()"]
+    D1 -->|total| CON["data_utils.py\ntotal_concat()"]
+    D1 -->|reliable| REL["data_utils.py\nselect_reliable_data()"]
 
-    SPL & CON & REL --> D2{데이터 증강}
-    D2 -->|"aug"| AUG["data_utils.py / augment()\naugment_utils.py\nspeed_aug() + pitch_aug()"]
-    D2 -->|"no aug"| READY
-    AUG --> READY["학습 / 검증 / 테스트 배열"]
+    SPL & CON & REL --> D2{증강}
+    D2 -->|aug| AUG["data_utils.py / augment()\naugment_utils.py\nspeed_aug() + pitch_aug()"]
+    D2 -->|no aug| READY["train/valid/test 배열"]
+    AUG --> READY
 
-    READY --> D3{"CNN 차원\nmodel_1D.py\nmake_talk_clean_model()"}
-    D3 -->|"1D"| CNN1["Conv1D × 2"]
-    D3 -->|"2D"| CNN2["Conv2D × 2"]
+    READY --> D3{"model_1D.py\nmake_talk_clean_model()"}
+    D3 -->|1D| CNN1["Conv1D × 2"]
+    D3 -->|2D| CNN2["Conv2D × 2"]
 
-    CNN1 & CNN2 --> RNN["Bidirectional GRU\n→ Sinusoidal PE\n→ Cross Attention × 6"]
+    CNN1 & CNN2 --> RNN["GRU → Sinusoidal PE\n→ Cross Attention × 6"]
 
     RNN --> D4{출력 활성화}
-    D4 -->|"linear"| OUT["Dense(1, linear)"]
-    D4 -->|"relu"| OUT2["Dense(1, relu)"]
+    D4 -->|linear| OUT["Dense(1, linear)"]
+    D4 -->|relu| OUT2["Dense(1, relu)"]
 
-    OUT & OUT2 --> D5{"손실 가중치\ntrain_utils.py\nmodel_train()"}
-    D5 -->|"lossO"| WGT["weight_return()\n역수 가중치 부여"]
-    D5 -->|"lossX"| FIT["균등 가중치"]
+    OUT & OUT2 --> D5{"train_utils.py\nmodel_train()"}
+    D5 -->|lossO| WGT["train_utils.py\nweight_return()"]
+    D5 -->|lossX| FIT["균등 가중치"]
 
     WGT & FIT --> CKPT[".keras 저장"]
 
-    CKPT --> PRED["test.py\nmodel.predict()\n예측값 0~1"]
-    PRED --> POST["× Score_Alloc → round()\n정수 점수 변환"]
-    POST --> RESULT["Accuracy / Pearson r\n결과 CSV 저장"]
+    CKPT -->|"test.py / model.predict()"| POST["× Score_Alloc → round()"]
+    POST --> RESULT["Accuracy / Pearson r → CSV"]
 ```
 
 ---
