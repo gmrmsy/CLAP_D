@@ -75,78 +75,78 @@ CLAP_D/
     <tr>
       <td rowspan="2"><b>1. 전처리</b></td>
       <td><code>wav_utils.py</code></td>
-      <td><code>x_data_preprocess()</code></td>
+      <td><a href="https://github.com/gmrmsy/CLAP_D/blob/main/scr/utils/wav_utils.py#L31"><code>x_data_preprocess()</code></a></td>
       <td>wav 파일 → 멜 스펙트로그램 → x1_data.npy</td>
       <td>-</td>
     </tr>
     <tr>
       <td><code>jamo_utils.py</code></td>
-      <td><code>text_to_ctc_indices()</code></td>
+      <td><a href="https://github.com/gmrmsy/CLAP_D/blob/main/scr/utils/jamo_utils.py#L74"><code>text_to_ctc_indices()</code></a></td>
       <td>제시 텍스트 → 자모 인코딩 → x2_data.npy</td>
       <td>-</td>
     </tr>
     <tr>
       <td><b>2. 데이터 로드</b></td>
       <td><code>data_utils.py</code></td>
-      <td><code>data_load()</code></td>
+      <td><a href="https://github.com/gmrmsy/CLAP_D/blob/main/scr/utils/data_utils.py#L8"><code>data_load()</code></a></td>
       <td>npy 파일 로드 및 데이터 구성</td>
       <td>-</td>
     </tr>
     <tr>
       <td rowspan="3"><b>3. 데이터 구성</b></td>
       <td rowspan="3"><code>data_utils.py</code></td>
-      <td><code>make_list()</code></td>
+      <td><a href="https://github.com/gmrmsy/CLAP_D/blob/main/scr/utils/data_utils.py#L22"><code>make_list()</code></a></td>
       <td>문항별 독립 학습 데이터 구성</td>
       <td><b>no1 ~ no25</b></td>
     </tr>
     <tr>
-      <td><code>total_concat()</code></td>
+      <td><a href="https://github.com/gmrmsy/CLAP_D/blob/main/scr/utils/data_utils.py#L44"><code>total_concat()</code></a></td>
       <td>전체 25문항 병합</td>
       <td><b>total</b></td>
     </tr>
     <tr>
-      <td><code>select_reliable_data()</code></td>
+      <td><a href="https://github.com/gmrmsy/CLAP_D/blob/main/scr/utils/data_utils.py#L173"><code>select_reliable_data()</code></a></td>
       <td>Target 분산 상위 3문항 선택</td>
       <td><b>reliable</b></td>
     </tr>
     <tr>
       <td rowspan="3"><b>4. 데이터 증강</b></td>
       <td><code>data_utils.py</code></td>
-      <td><code>augment()</code></td>
+      <td><a href="https://github.com/gmrmsy/CLAP_D/blob/main/scr/utils/data_utils.py#L105"><code>augment()</code></a></td>
       <td>Target≠1 소수 샘플만 선택하여 증강</td>
       <td rowspan="3"><b>aug</b> / no aug</td>
     </tr>
     <tr>
       <td rowspan="2"><code>augment_utils.py</code></td>
-      <td><code>speed_aug()</code></td>
+      <td><a href="https://github.com/gmrmsy/CLAP_D/blob/main/scr/utils/augment_utils.py#L3"><code>speed_aug()</code></a></td>
       <td>멜 스펙트로그램 시간축 선형 보간 (속도 변환)</td>
     </tr>
     <tr>
-      <td><code>pitch_aug()</code></td>
+      <td><a href="https://github.com/gmrmsy/CLAP_D/blob/main/scr/utils/augment_utils.py#L27"><code>pitch_aug()</code></a></td>
       <td>멜 빈(bin) 단위 주파수 축 이동 (피치 변환)</td>
     </tr>
     <tr>
       <td><b>5. 모델 생성</b></td>
       <td><code>model_1D.py</code></td>
-      <td><code>make_talk_clean_model()</code></td>
+      <td><a href="https://github.com/gmrmsy/CLAP_D/blob/main/scr/models/model_1D.py#L57"><code>make_talk_clean_model()</code></a></td>
       <td>CNN → GRU → Attention × 6 → Dense(1)</td>
       <td><b>1D / 2D</b>, <b>linear / relu</b></td>
     </tr>
     <tr>
       <td rowspan="2"><b>6. 모델 학습</b></td>
       <td rowspan="2"><code>train_utils.py</code></td>
-      <td><code>model_train()</code></td>
+      <td><a href="https://github.com/gmrmsy/CLAP_D/blob/main/scr/utils/train_utils.py#L4"><code>model_train()</code></a></td>
       <td>Adam · MSE · EarlyStopping으로 학습</td>
       <td rowspan="2"><b>lossO / lossX</b></td>
     </tr>
     <tr>
-      <td><code>weight_return()</code></td>
+      <td><a href="https://github.com/gmrmsy/CLAP_D/blob/main/scr/utils/train_utils.py#L15"><code>weight_return()</code></a></td>
       <td>점수별 역수 가중치 계산 (lossO 적용 시)</td>
     </tr>
     <tr>
       <td><b>7. 평가</b></td>
       <td><code>test.py</code></td>
-      <td><code>model.predict()</code></td>
+      <td><a href="https://github.com/gmrmsy/CLAP_D/blob/main/scr/evaluate/test.py#L60"><code>model.predict()</code></a></td>
       <td>예측값(0~1) × Score(Alloc) → round → Accuracy / Pearson r → CSV</td>
       <td>-</td>
     </tr>
@@ -190,7 +190,7 @@ Target ≠ 1 (감점/0점)  :  ~25.54%  (소수)
 
 ---
 
-## [모델 아키텍처 (Baseline: 1D_linear_lossO)](https://github.com/gmrmsy/CLAP_D/blob/main/scr/models/model_1D.py#L57)
+## [모델 아키텍처 (Baseline: 1D_linear_lossO)](https://github.com/gmrmsy/CLAP_D/blob/main/scr/models/model.py#L57)
 
 발화 음성(Query)과 제시 텍스트(Key) 간의 유사성을 측정하기 위해  
 **Cross Multi-Head Attention** 구조를 중심으로 설계하였습니다.
